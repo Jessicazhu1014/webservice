@@ -1,0 +1,102 @@
+{
+    "menu": [
+      {
+        "id": "item_001",
+        "name": "Vanilla Latte",
+        "category": "coffee",
+        "size": ["short", "tall", "grande", "venti"],
+        "flavor": ["vanilla"],
+        "price": 5.00,
+        "availability": "in_stock",
+        "description": "Creamy vanilla-flavored coffee with steamed milk."
+      },
+      {
+        "id": "item_002",
+        "name": "Blueberry Muffin",
+        "category": "pastry",
+        "price": 3.00,
+        "availability": "in_stock",
+        "description": "Freshly baked blueberry muffin."
+      },
+      {
+        "id": "item_003",
+        "name": "Iced Peach Green Tea",
+        "category": "tea",
+        "size": ["short", "tall", "grande", "venti"],
+        "price": 5.38,
+        "availability": "in_stock",
+        "description": "A chilled mix of green tea, sweet peach, offering a perfect blend of fruity sweetness."
+      }
+    ],
+    "cafes": [
+      {
+        "id": "cafe_001",
+        "name": "Brooklyn Coffee House",
+        "coordinates": "40.7128,-74.0060",
+        "type": "independent",
+        "rating": 4.5,
+        "open_now": true,
+        "address": "123 Coffee St, Brooklyn, NY"
+      },
+      {
+        "id": "cafe_002",
+        "name": "Espresso Express",
+        "coordinates": "40.7139,-74.0070",
+        "type": "chain",
+        "rating": 4.0,
+        "open_now": false,
+        "address": "456 Sugar Ave, Manhattan, NY"
+      },
+      {
+        "id": "cafe_003",
+        "name": "Cold Cold Cold",
+        "coordinates": "40.7376,-74.0080",
+        "type": "chain",
+        "rating": 4.0,
+        "open_now": true,
+        "address": "29 Muffin Street, Jersey City, NJ"
+      }
+    ],
+    "users": [
+      {
+        "id": "user001",
+        "current_coordinates": "37.7749,-122.4194",
+        "orders": [
+          {
+            "item_id": "item_003",
+            "quantity": 1,
+            "status": "pending",
+            "pickup_time": "11:00 AM",
+            "total_price": 5.00
+          }
+        ]
+      },
+      {
+        "id": "user002",
+        "current_coordinates": "48.8566,2.3522",
+        "orders": [
+          {
+            "item_id": "item_005",
+            "quantity": 2,
+            "status": "completed",
+            "pickup_time": "09:30 AM",
+            "total_price": 6.00
+          }
+        ]
+      },
+      {
+        "id": "user003",
+        "current_coordinates": "35.6895,139.6917",
+        "orders": [
+          {
+            "item_id": "item_002",
+            "quantity": 1,
+            "status": "pending",
+            "pickup_time": "10:45 AM",
+            "total_price": 3.00
+          }
+        ]
+      }
+    ]
+  }
+  
