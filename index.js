@@ -1,7 +1,7 @@
 import express from 'express';
 import fs from 'fs/promises';
 
-const app = express();
+const app = express(); 
 const port = process.env.PORT || 3001;
 
 let jsonData; 
@@ -9,102 +9,92 @@ let menu;
 let cafes;
 let users;
 
-// 读取 JSON 文件
 const readJson = async () => {
     const data = await fs.readFile('data.json', 'utf-8');
     jsonData = JSON.parse(data);
     menu = jsonData.menu;
     cafes = jsonData.cafes;
     users = jsonData.users;
-};
+}
 
-// 启动服务器
 readJson().then(() => {
     app.listen(port, () => {
         console.log(`App listening on port ${port}`);
     });
 });
 
-// 1. 查看菜单路由
 app.get('/menu', (req, res) => {
-    const { category, size, flavor, availability } = req.query;
-    let filteredMenu = menu;
+    res.send(menu);
+});
 
-    // 根据查询参数进行过滤
-    if (category) filteredMenu = filteredMenu.filter(item => item.category === category);
-    if (size) filteredMenu = filteredMenu.filter(item => item.size?.includes(size));
-    if (flavor) filteredMenu = filteredMenu.filter(item => item.flavor?.includes(flavor));
-    if (availability) filteredMenu = filteredMenu.filter(item => item.availability === availability);
-
+app.get('/menu/category', (req, res) => {
+    // /menu/category?category=coffee
+    const category = req.query.category;
+    const filteredMenu = menu.filter(item => item.category === category);
     res.send(filteredMenu);
 });
 
-// 2. 查找附近咖啡店路由
-app.get('/nearby', (req, res) => {
-    const { coordinates, radius, type, rating, open_now } = req.query;
-    let filteredCafes = cafes;
+app.get('/menu/filter', (req, res) => {
+    // /menu/filter?availability=in_stock&max_price=5.00
+    const availability = req.query.availability;
+    const maxPrice = parseFloat(req.query.max_price);
+    const filteredMenu = menu.filter(item => 
+        item.availability === availability && item.price <= maxPrice
+    );
+    res.send(filteredMenu);
+});
 
-    // 根据查询参数进行过滤
-    if (type) filteredCafes = filteredCafes.filter(cafe => cafe.type === type);
-    if (rating) filteredCafes = filteredCafes.filter(cafe => cafe.rating >= parseFloat(rating));
-    if (open_now) filteredCafes = filteredCafes.filter(cafe => cafe.open_now === (open_now === 'true'));
+app.get('/cafes', (req, res) => {
+    res.send(cafes);
+});
 
-    // 仅返回匹配的咖啡店列表
+app.get('/cafes/filter', (req, res) => {
+    // /cafes/filter?type=independent&open_now=true
+    const type = req.query.type;
+    const openNow = req.query.open_now === 'true';
+    const filteredCafes = cafes.filter(cafe => 
+        cafe.type === type && cafe.open_now === openNow
+    );
     res.send(filteredCafes);
 });
 
-// 3. 下单路由
-app.post('/order', (req, res) => {
-    const { item_id, user_id, quantity, customization, pickup_time } = req.query;
-
-    // 查找用户和菜单项
-    const user = users.find(u => u.id === user_id);
-    const item = menu.find(m => m.id === item_id);
-
-    if (!user || !item) {
-        res.status(400).send({ error: 'Invalid user or item ID' });
-        return;
-    }
-
-    // 创建订单对象
-    const order = {
-        item_id: item_id,
-        quantity: parseInt(quantity),
-        status: 'pending',
-        customization: customization,
-        pickup_time: pickup_time,
-        total_price: item.price * parseInt(quantity)
-    };
-
-    // 将订单添加到用户的订单列表中
-    user.orders.push(order);
-
-    res.send({
-        message: 'Order placed successfully',
-        order: order
-    });
+app.get('/users', (req, res) => {
+    res.send(users);
 });
 
-// 4. 获取指定用户的订单路由
-app.get('/user/:user_id', (req, res) => {
-    const userId = req.params.user_id;
+app.get('/users/:userId/orders', (req, res) => {
+    // /users/user001/orders
+    const userId = req.params.userId;
     const user = users.find(u => u.id === userId);
-
     if (user) {
         res.send(user.orders);
     } else {
-        res.status(404).send({ error: 'User not found' });
+        res.status(404).send({ message: 'User not found' });
     }
 });
 
-// 5. 获取单个菜单项的详细信息
-app.get('/menu/:item_id', (req, res) => {
-    const itemId = req.params.item_id;
-    const item = menu.find(m => m.id === itemId);
+app.post('/users/:userId/order', async (req, res) => {
+    const userId = req.params.userId;
+    const { itemId, quantity, pickupTime } = req.query;
 
-    if (item) {
-        res.send(item);
+    const user = users.find(u => u.id === userId);
+    const menuItem = menu.find(item => item.id === itemId);
+
+    if (user && menuItem && menuItem.availability === 'in_stock') {
+        const newOrder = {
+            item_id: itemId,
+            quantity: parseInt(quantity),
+            status: 'pending',
+            pickup_time: pickupTime,
+            total_price: menuItem.price * parseInt(quantity)
+        };
+
+        user.orders.push(newOrder);
+        await fs.writeFile('data.json', JSON.stringify(jsonData, null, 2));
+
+        res.send({ message: 'Order placed successfully', order: newOrder });
     } else {
-        res.status(404).send({ error: 'Menu item not found' });
+        res.status(400).send({ message: 'Unable to place order. Check item availability or user ID.' });
     }
 });
+
