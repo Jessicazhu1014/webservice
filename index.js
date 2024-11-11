@@ -2,12 +2,13 @@ import express from 'express';
 import fs from 'fs/promises';
 import cors from 'cors';
 
-app.use(cors({
-    origin: '*'
-}));
+
 
 const app = express(); 
 const port = process.env.PORT || 3001;
+app.use(cors({
+    origin: '*'
+}));
 
 let jsonData; 
 let menu;
